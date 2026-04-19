@@ -5,9 +5,11 @@ Audience: self-learner with programming background, limited formal math
 Goal: produce a single learner fluent in Lean 4 and able to read,
 contribute to, and reason about cslib.
 
-This is the authoritative spec. The curriculum/ directory refines each
-part into modules. The Lean source tree (to be created) implements the
-exercises.
+This is the authoritative spec. `INTERACTIVE.md` specifies the
+tooling that makes the course interactive (LLM tutor, hints, Socratic
+chats, web playground, adaptive pathing, spaced repetition). The
+`curriculum/` directory refines each part into modules. The Lean
+source tree (to be created) implements the exercises.
 
 
 ## 1. Goals
@@ -80,7 +82,10 @@ Total: roughly 220–350 hours. At 8 hrs/week, 7–10 months.
 
 ## 5. Pedagogical model
 
-Each module has four surfaces:
+Each module has four content surfaces and a layer of interactive
+tooling over them.
+
+**Content surfaces.**
 
 1. **Notes** (`curriculum/<module>.md`): prose exposition. Written at
    "Software Foundations" density — carefully, with examples, not as
@@ -93,9 +98,28 @@ Each module has four surfaces:
    prose or pen-and-paper questions with hidden answers. Forces the
    learner to articulate ideas, not just click through tactics.
 
+**Interactive surfaces** (detailed in `INTERACTIVE.md`).
+
+1. **LLM tutor** — on-demand help when a proof stalls; context-aware
+   but forbidden from seeing the reference solution.
+2. **Progressive hints** — four graded levels (nudge → sketch →
+   skeleton → full solution); author-written for core exercises,
+   LLM-generated only where marked.
+3. **Socratic chat** — an end-of-module dialogue that probes
+   understanding in prose and produces a gap report.
+4. **Web playground** — a zero-install Codespaces/lean4web target for
+   Parts I–II exercises, to collapse onboarding friction.
+5. **Adaptive pathing** — the diagnostic is live; module routing
+   (`full` / `skim` / `skip`) can be re-negotiated after Socratic
+   gaps.
+6. **Spaced repetition** — an SM-2 scheduler over author-written
+   cards, to keep earlier material from decaying.
+
 Progression through a module: read notes → run worked examples →
-complete exercises → answer concept checks → run `lake build`. The
-final step is the honest gate.
+complete exercises (tutor and hints available on demand) → answer
+concept checks → Socratic chat → `lake build`. The final step is the
+honest gate. SRS reviews run in parallel, independent of the module
+you're currently on.
 
 **No video lectures.** Text scales, is greppable, and matches how
 formal methods is actually practiced.
@@ -190,13 +214,15 @@ Deliverable: a Lean project, a 2,000-word write-up, and a recorded
 .
 ├── README.md                     entry point, quick-start
 ├── SPEC.md                       this file
+├── INTERACTIVE.md                interactive-layer specification
 ├── curriculum/                   prose notes per module
 │   ├── 00-diagnostic.md
 │   ├── 01-mathematical-foundations.md
 │   ├── 02-lean-proof-assistant.md
 │   ├── 03-formal-methods-bridge.md
 │   ├── 04-cslib-deep-dives.md
-│   └── 05-capstone.md
+│   ├── 05-capstone.md
+│   └── <module>-probes.md        Socratic probe banks (per module)
 ├── lakefile.toml                 Lean project manifest
 ├── lean-toolchain                pinned toolchain (matches cslib)
 ├── FormalMethodsCourse/          library root
@@ -209,8 +235,22 @@ Deliverable: a Lean project, a 2,000-word write-up, and a recorded
 │   ├── Part2/
 │   ├── Part3/
 │   └── Part4/
-├── test/                         sanity tests that Exercises/ has no `sorry`
-└── .github/workflows/            CI: lake build + `sorry` check
+├── Hints/                        author-written progressive hints
+│   └── Part*/<module>-<exercise>.md
+├── srs/                          spaced-repetition card decks
+│   └── <module>.md
+├── prompts/                      LLM system prompts (versioned)
+│   ├── tutor.md
+│   ├── socratic.md
+│   └── CHANGELOG.md
+├── tools/fmcourse/               CLI + core library (npm package)
+├── .devcontainer/                Codespaces / web playground config
+├── web/                          optional lean4web deployment
+├── PROGRESS.json                 learner state (committed)
+├── test/                         sanity tests: no `sorry` in Exercises/,
+│                                 every module has `.lean` + probes
+└── .github/workflows/            CI: lake build + `sorry` check +
+                                  probe-bank / hint coverage checks
 ```
 
 The spec itself does not ship Lean code. Part of the course is the
@@ -239,7 +279,12 @@ A GitHub Actions workflow:
 2. A grep-based `sorry` check fails the build if `sorry` appears
    anywhere under `Exercises/`.
 3. A simple script in `test/` verifies every module referenced by
-   `curriculum/` has a matching `.lean` file.
+   `curriculum/` has a matching `.lean` file, a probe bank
+   (`curriculum/<module>-probes.md`), author-written hints for every
+   exercise not tagged `@autoHint: true`, and at least one SRS card
+   under `srs/<module>.md`.
+4. The `fmcourse` CLI package under `tools/fmcourse/` builds and
+   passes its own unit tests.
 
 The CI gate is the honest assessment. There is no grader.
 
@@ -263,6 +308,23 @@ end Part2.Induction
 
 The worked-example counterpart lives in `FormalMethodsCourse/Part2/`
 with the proof filled in and narrated.
+
+### 7.5 Interactive layer
+
+The interactive layer is specified in full in `INTERACTIVE.md`.
+Summary of the architecture:
+
+- A small `fmcourse` CLI (and optional VS Code extension) owns
+  learner state, talks to the Lean LSP, and brokers LLM calls.
+- Three surfaces (CLI, VS Code, web playground) share one core
+  library and two state files: `PROGRESS.json` (in the repo) and
+  `~/.fmcourse/state.db` (local).
+- LLM provider is pluggable; Claude is the default.
+- The tutor is forbidden from reading `FormalMethodsCourse/Part*/Solutions/`.
+- Everything works offline except the tutor and Socratic chat; those
+  degrade to cached playbooks when the network is unavailable.
+
+See `INTERACTIVE.md` §12 for the phased implementation roadmap.
 
 
 ## 8. Assessment
@@ -296,11 +358,15 @@ No other runtime dependencies. No web app. No custom tooling beyond
 
 ## 10. Out of scope (explicitly)
 
-- Hosting, LMS integration, grading infrastructure.
+- Hosting for paid learner accounts, LMS integration, grading
+  infrastructure for classrooms.
 - Collaborative cohorts, forums, Discord.
 - A "certificate." The capstone write-up is the artifact.
 - Localization. English only.
 - Accessibility audit of generated PDFs (none are generated).
+- A custom LLM fine-tune for the tutor. Prompts + retrieval over
+  module notes are sufficient at this scale.
+- Mobile / native-GUI applications. Anki export covers mobile SRS.
 
 
 ## 11. Success criteria for v1.0
@@ -308,15 +374,24 @@ No other runtime dependencies. No web app. No custom tooling beyond
 This repository ships v1.0 when:
 
 1. All five curriculum files exist at the density described in §5.
-2. Every module listed in §6 has a worked-example `.lean` file and a
-   corresponding `Exercises/` file.
+2. Every module listed in §6 has a worked-example `.lean` file, a
+   corresponding `Exercises/` file, a probe bank under
+   `curriculum/<module>-probes.md`, author-written hints under
+   `Hints/`, and at least three SRS cards under `srs/`.
 3. `lake build` succeeds from a clean clone.
 4. A capstone reference solution exists for at least one of the four
    tracks in §6 Part V.
-5. A second learner (not the author) completes the diagnostic and Part
-   II without private help and reports no blocking defects.
+5. The `fmcourse` CLI implements every command named in
+   `INTERACTIVE.md` §§4–9 and its unit tests pass in CI.
+6. The Codespaces/devcontainer path launches and completes at least
+   one Part II exercise without a local Lean install.
+7. A second learner (not the author) completes the diagnostic and Part
+   II without private help and reports no blocking defects, with
+   Socratic transcripts archived under `~/.fmcourse/transcripts/`.
 
-Anything short of this is v0.x and should be labeled as such.
+Anything short of this is v0.x and should be labeled as such. The
+phased roadmap in `INTERACTIVE.md` §12 defines intermediate v0.x
+milestones.
 
 
 ## 12. Revision policy
