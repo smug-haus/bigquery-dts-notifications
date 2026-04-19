@@ -318,7 +318,7 @@ Summary of the architecture:
   learner state, talks to the Lean LSP, and brokers LLM calls.
 - Three surfaces (CLI, VS Code, web playground) share one core
   library and two state files: `PROGRESS.json` (in the repo) and
-  `~/.fmcourse/state.db` (local).
+  `~/.fmcourse/state.json` (local).
 - LLM provider is pluggable; Claude is the default.
 - The tutor is forbidden from reading `FormalMethodsCourse/Part*/Solutions/`.
 - Everything works offline except the tutor and Socratic chat; those

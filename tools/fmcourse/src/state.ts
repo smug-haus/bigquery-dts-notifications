@@ -2,14 +2,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { existsSync } from "node:fs";
 
-/**
- * Local-state schema. Stored as JSON at `~/.fmcourse/state.json`.
- *
- * The interactive-layer spec describes this as a SQLite database. For
- * v0.3 we use JSON for portability (no native-build dependency). The
- * schema below is intentionally close to a relational shape so a
- * future SQLite migration is straightforward.
- */
+/** Local-state schema. Stored as JSON at `~/.fmcourse/state.json`. */
 export interface LocalState {
   schemaVersion: 1;
   hintGrants: HintGrant[];

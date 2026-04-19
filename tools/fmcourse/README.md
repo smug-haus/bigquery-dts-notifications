@@ -49,10 +49,6 @@ Two files:
 - `~/.fmcourse/state.json` — local hint-grant log, SRS schedule,
   transcripts. Not committed.
 
-The interactive-layer spec (`INTERACTIVE.md`) describes the local
-state as a SQLite database. This implementation uses a JSON file for
-portability; a SQLite migration is tracked for v0.6.
-
 ## Safety invariants
 
 The tutor's context builder is forbidden from reading

@@ -103,17 +103,18 @@ Committed. Tracks module-level progress. Example:
 
 Routing values: `"full" | "skim" | "skip"`. `completed` is append-only.
 
-### 3.2 `~/.fmcourse/state.db` (local, not committed)
+### 3.2 `~/.fmcourse/state.json` (local, not committed)
 
-A SQLite file holding:
+A single JSON file holding:
 
 - Conversation history (per-module Socratic chats, tutor sessions).
 - Hint-grant log (which hint level was served, for which exercise,
   when — see §5).
 - Spaced-repetition schedule (§9).
 
-A thin JSON export (`fmcourse export`) produces a human-readable dump
-for backup or portability.
+Single-learner scale: a few hundred cards and a few thousand transcript
+entries over the lifetime of the course. JSON is the right tool. No
+database dependency.
 
 
 ## 4. Component: LLM tutor
