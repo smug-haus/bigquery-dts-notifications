@@ -14,6 +14,11 @@ lakefile-manifest.json
 *.swp
 *.swo
 
+# Node / npm (fmcourse CLI under tools/fmcourse)
+node_modules/
+dist/
+npm-debug.log*
+
 # Scratch
 scratch/
 tmp/

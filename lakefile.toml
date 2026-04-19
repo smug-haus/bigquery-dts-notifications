@@ -1,0 +1,18 @@
+name = "FormalMethodsCourse"
+defaultTargets = ["FormalMethodsCourse"]
+
+[leanOptions]
+pp.unicode.fun = true
+
+[[lean_lib]]
+name = "FormalMethodsCourse"
+
+[[lean_lib]]
+name = "Exercises"
+
+# cslib is enabled from Part IV onward. It transitively pulls Mathlib.
+# Comment out while working through Parts I-III to keep builds fast.
+[[require]]
+name = "cslib"
+scope = "leanprover"
+rev = "main"

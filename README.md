@@ -54,8 +54,24 @@ problem reading slowly. No prior proof experience assumed.
 
 ## Status
 
-Draft v0.1 — specification only. See [SPEC.md §11](./SPEC.md#11-success-criteria-for-v10)
-for the bar v1.0 must clear.
+v0.3 — spec plus an initial implementation:
+
+- Lean project scaffolding (`lakefile.toml`, `lean-toolchain`,
+  `FormalMethodsCourse/`, `Exercises/`, `FormalMethodsCourse/Solutions/`).
+- Part I §1.1 fully authored as a template (worked examples,
+  exercises, reference solutions, author hints, probe bank, SRS deck).
+- `fmcourse` CLI under `tools/fmcourse/` with working `diagnostic`,
+  `progress`, `complete`, `hint`, `tutor`, `socratic`, `review`, and
+  `srs export-anki`. 30 unit tests passing.
+- Prompt templates under `prompts/`.
+- Structural check under `test/check-structure.mjs`.
+- GitHub Actions CI (`.github/workflows/ci.yml`) and Codespaces
+  devcontainer (`.devcontainer/`).
+
+Gaps before v1.0 (per [`SPEC.md` §11](./SPEC.md#11-success-criteria-for-v10)):
+authored content for the remaining modules of Parts I–IV, Lean build
+verified in CI (toggle `ENABLE_LEAN_CI`), capstone reference solution,
+VS Code extension, web playground.
 
 ## License
 
