@@ -1,3 +1,4 @@
 -- Exercises for Part I. Add one `import` per authored module.
 import Exercises.Part1.Module1_1
 import Exercises.Part1.Module1_2
+import Exercises.Part1.Module1_3
